@@ -1,41 +1,7 @@
 {% extends 'base.html' %}
 
-{% block title %}Выход из системы{% endblock %}
-
-{% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card border-0 shadow">
-                <div class="card-body p-5 text-center">
-                    <div class="mb-4">
-                        <i class="bi bi-box-arrow-right text-primary" style="font-size: 3rem;"></i>
-                    </div>
-                    <h2 class="h4 mb-3">Вы вышли из системы</h2>
-                    <p class="text-muted mb-4">
-                        Спасибо, что воспользовались TaskTracker. Надеемся увидеть вас снова!
-                    </p>
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'login' %}" class="btn btn-primary">
-                            <i class="bi bi-box-arrow-in-right"></i> Войти снова
-                        </a>
-                        <a href="{% url 'tasktracker:dashboard' %}" class="btn btn-outline-secondary">
-                            <i class="bi bi-house"></i> На главную
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+{% block body-center %}
+<div class="container">
+<h1>Выход</h1>
 </div>
-
-<style>
-    .card {
-        border-radius: 12px;
-    }
-    .btn {
-        border-radius: 8px;
-        padding: 10px 16px;
-    }
-</style>
 {% endblock %}

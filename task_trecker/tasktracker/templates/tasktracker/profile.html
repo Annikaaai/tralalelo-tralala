@@ -1,0 +1,435 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }} | Профиль</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4a6bff;
+            --secondary: #fb8516;
+            --dark: #2d3748;
+            --light: #f7fafc;
+        }
+
+        body {
+            font-family: 'Kumbh Sans', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark);
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #6b46c1 100%);
+            color: white;
+            padding: 3rem 0;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .avatar-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 2rem;
+            justify-content: center;
+        }
+
+        .avatar-option {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .avatar-option:hover, .avatar-option.active {
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .profile-text {
+            flex: 1;
+        }
+        :root {
+            --primary: #4a6bff;
+            --secondary: #fb8516;
+            --dark: #2d3748;
+            --light: #f7fafc;
+        }
+
+        body {
+            font-family: 'Kumbh Sans', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark);
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #6b46c1 100%);
+            color: white;
+            padding: 3rem 0;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+        }
+
+
+        .avatar-option:hover, .avatar-option.active {
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+
+        .profile-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .profile-card h3 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-item {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid var(--secondary);
+        }
+
+        .task-high {
+            border-left-color: #e53e3e;
+        }
+
+        .task-medium {
+            border-left-color: #f6ad55;
+        }
+
+        .task-low {
+            border-left-color: #68d391;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+        }
+.btn-custom {
+          background-color: #634FD0; /* Красный */
+          color: white;
+          border: none;
+        }
+
+        .btn-custom-login {
+          background-color: #4a6bff; /* Красный */
+          color: white;
+          border: none;
+
+        }
+
+        .btn-custom-login:hover {
+          background-color: #ffffff;
+          color: black;
+        }
+
+        .btn-custom:hover {
+          background-color: #634FD0; /* Красный */
+          color: white;
+          border: none;
+        }
+        .edit-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: #3a5bed;
+        }
+    </style>
+</head>
+<script>
+function updatePreview(imgPath) {
+    document.getElementById('current-avatar').src = imgPath;
+}
+</script>
+<body>
+    <!-- Шапка профиля -->
+    <div class="profile-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+
+
+                <div class="col-md-2 text-center">
+    <img src="{% static 'images/avatars/default'|add:avatar_number|add:'.jpg' %}" onerror="{% static 'images/avatars/default'|add:avatar_number|add:'.png' %}"
+         alt="Аватар"
+         class="profile-avatar"
+         id="current-avatar">
+
+</div>
+                </div>
+                <div class="col-md-6">
+                    <h1>{{ user.username }}</h1>
+                    <p class="lead">{{ user.profile.bio|default:"Пользователь не добавил информацию о себе" }}</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex justify-content-end">
+                        {% for social in user.profile.social_links.all %}
+                        <a href="{{ social.url }}" class="social-link" target="_blank">
+                            <i class="fab fa-{{ social.network }}"></i>
+                        </a>
+                        {% endfor %}
+                        <button class="edit-btn" data-bs-toggle="modal" data-bs-target="#avatarModal">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <!-- Левая колонка -->
+            <!-- Правая колонка -->
+            <div class="col-md-12">
+                <!-- Проекты -->
+                <!-- Проекты -->
+<div class="profile-card">
+    <h3>Мои проекты</h3>
+    {% for project in projects %}
+    <div class="project-card">
+        <a href="{% url 'project_detail' team_id=project.team.id project_id=project.id %}">
+            <h4>{{ project.name }}</h4>
+        </a>
+        <p>{{ project.description|truncatechars:100 }}</p>
+        <div class="d-flex justify-content-between">
+            <span class="badge bg-{% if project.status == 'completed' %}success{% elif project.status == 'in_progress' %}warning{% else %}secondary{% endif %}">
+                {{ project.get_status_display }}
+            </span>
+            <small class="text-muted">Дедлайн: {{ project.deadline|date:"d.m.Y" }}</small>
+        </div>
+    </div>
+    {% empty %}
+    <p>У вас пока нет проектов</p>
+    {% endfor %}
+</div>
+                <!-- Задачи -->
+                <div class="profile-card">
+                    <h3>Мои задачи</h3>
+                    {% for task in tasks %}
+                <div class="task-item task-{{ task.priority }}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'task_detail' team_id=task.project.team.id project_id=task.project.id task_id=task.id %}">
+                            {{ task.title }}
+                        </a>
+                        <span class="badge bg-{% if task.completed %}success{% else %}warning{% endif %}">
+                            {% if task.completed %}Завершено{% else %}В работе{% endif %}
+                        </span>
+                    </div>
+                    <p class="mb-1">{{ task.description|truncatechars:80 }}</p>
+                    <small class="text-muted">Проект: {{ task.project.name }} • Дедлайн: {{ task.deadline|date:"d.m.Y" }}</small>
+                </div>
+            {% empty %}
+                <p>У вас пока нет задач</p>
+            {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно смены аватара -->
+ <div class="modal fade" id="avatarModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Смена аватара</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'update_avatar' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="avatar-options text-center">
+                        {% for i in "123456" %}
+                        <img src="{% static 'images/avatars/default'|add:i|add:'.jpg' %}"
+                             class="avatar-option m-2 {% if user.profile.avatar_number == forloop.counter %}border border-primary border-3{% endif %}"
+                             style="width: 80px; height: 80px; cursor: pointer;"
+                             onclick="document.getElementById('avatarInput{{i}}').checked = true; updatePreview('{% static 'images/avatars/default'|add:i|add:'.jpg' %}')">
+                        <input type="radio" name="avatar_number" value="{{i}}"
+                               id="avatarInput{{i}}"
+                               class="d-none"
+                               {% if user.profile.avatar_number == forloop.counter %}checked{% endif %}>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    function selectAvatar(element, number) {
+        // Убираем выделение у всех аватарок
+        document.querySelectorAll('.avatar-option').forEach(el => {
+            el.classList.remove('active');
+        });
+
+        // Добавляем выделение выбранной
+        element.classList.add('active');
+
+        // Обновляем номер в скрытом поле
+        document.getElementById('selectedAvatarNumber').value = number;
+
+        // Обновляем превью (опционально)
+        document.getElementById('current-avatar').src =
+            `/static/images/avatars/default${number}.jpg`;
+    }
+</script>
+    <!-- Модальное окно -->
+<div class="modal fade" id="avatarModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Смена аватара</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'update_avatar' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Выберите аватар:</label>
+                        <div class="avatar-options">
+                            {% for i in "123456" %}
+                            <img src="{% static 'images/avatars/default'|add:i|add:'.jpg' %}"
+                                 class="avatar-option {% if user.profile.avatar_number == i|add:'0' %}active{% endif %}"
+                                 data-number="{{ i }}"
+                                 onclick="selectAvatar(this, {{ i }})">
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="avatar_number" id="selectedAvatarNumber"
+                               value="{{ user.profile.avatar_number }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelector('.btn').addEventListener('click', function() {
+  this.classList.toggle('active'); // Добавляем/убираем класс при клике
+});
+        function selectAvatar(element, path) {
+            // Убираем выделение у всех аватарок
+            document.querySelectorAll('.avatar-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // Добавляем выделение выбранной
+            element.classList.add('selected');
+
+            // Устанавливаем значение в скрытое поле
+            document.getElementById('defaultAvatarInput').value = path;
+
+            // Показываем превью
+            document.getElementById('current-avatar').src = path;
+        }
+
+        // Проверяем, можно ли менять данные
+        function checkChangeTime() {
+            const lastChanged = new Date('{{ user.profile.last_changed|date:"Y-m-d H:i:s" }}');
+            const now = new Date();
+            const diffHours = Math.abs(now - lastChanged) / 36e5;
+
+            if (diffHours < 24) {
+                const nextChange = new Date(lastChanged);
+                nextChange.setHours(nextChange.getHours() + 24);
+                alert(`Вы сможете изменить данные после ${nextChange.toLocaleString()}`);
+                return false;
+            }
+            return true;
+        }
+    </script>
+</body>
+{% endblock %}

@@ -11,7 +11,7 @@
                 <i class="bi bi-kanban-fill text-primary"></i> {{ project.name }}
             </h2>
             <p class="text-muted mb-0">
-                <i class="bi bi-people-fill"></i> Команда: {{ project.team.name }}
+                <i class="bi bi-people-fill"></i> Команда: <a href="{% url 'team_detail' team_id=project.team.id %}">{{ project.team.name }}</a>
                 <span class="mx-2">|</span>
                 Статус: <span class="badge bg-{{ project.get_status_color }}">{{ project.get_status_display }}</span>
             </p>
@@ -56,7 +56,7 @@
                                 {% for task in tasks %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'task_detail' task_id=task.id %}">
+                                        <a href="{% url 'task_detail' team_id=project.team.id project_id=project.id task_id=task.id %}">
                                             {{ task.title|truncatechars:30 }}
                                         </a>
                                     </td>
@@ -78,7 +78,7 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <a href="{% url 'task_detail' task_id=task.id %}" 
+                                        <a href="{% url 'task_detail' team_id=project.team.id project_id=project.id task_id=task.id %}"
                                            class="btn btn-sm btn-outline-primary"
                                            title="Просмотреть">
                                             <i class="bi bi-eye"></i>
@@ -135,11 +135,15 @@
         padding: 0.35em 0.65em;
     }
     .bg-todo { background-color: #6c757d; }
-    .bg-in_progress { background-color: #0dcaf0; }
+    .bg-in_progress { background-color: rgb(238,35,63); }
     .bg-review { background-color: #ffc107; color: #000; }
     .bg-done { background-color: #198754; }
     .bg-low { background-color: #6c757d; }
     .bg-medium { background-color: #0dcaf0; }
     .bg-high { background-color: #dc3545; }
+    .bg-planning { background-color: #6c757d; }
+    .bg-active { background-color: rgb(238,35,63); }
+    .bg-on_hold { background-color: #ffc107; color: #000; }
+    .bg-completed { background-color: #198754; }
 </style>
 {% endblock %}

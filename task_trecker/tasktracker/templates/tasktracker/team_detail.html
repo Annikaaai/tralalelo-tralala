@@ -1,75 +1,223 @@
-<!-- templates/tasktracker/team_detail.html -->
-
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 
-{% block title %}{{ team.name }}{% endblock %}
+{% block title %}{{ team.name }} - Управление командой{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>{{ team.name }}</h1>
-    {% if member.role == 'ADMIN' %}
-    <a href="#" class="btn btn-outline-secondary">Управление командой</a>
-    {% endif %}
-</div>
-
-<p>{{ team.description }}</p>
-
-<div class="row mt-4">
-    <div class="col-md-6">
-        <h3>Участники</h3>
-        <ul class="list-group">
-            {% for tm in team_members %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ tm.user.username }}
-                <span class="badge bg-primary rounded-pill">{{ tm.get_role_display }}</span>
-            </li>
-            {% endfor %}
-        </ul>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">
+                <i class="bi bi-people-fill text-primary"></i> {{ team.name }}
+            </h1>
+            <p class="text-muted mb-0">{{ team.description }}</p>
+        </div>
+        {% if member.role == 'ADMIN' %}
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#manageTeamModal">
+            <i class="bi bi-gear"></i> Управление командой
+        </button>
+        {% endif %}
     </div>
 
-    <div class="col-md-6">
-        <h3>Проекты</h3>
-        {% if projects %}
-        <div class="list-group">
-            {% for project in projects %}
-            <a href="{% url 'project_detail' project_id=project.id %}"
-               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                {{ project.name }}
-                <span class="badge bg-{{ project.get_status_color }} rounded-pill">
-                    {{ project.get_status_display }}
-                </span>
-            </a>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="alert alert-info">
-            В этой команде пока нет проектов.
-        </div>
-        {% endif %}
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-person-lines-fill"></i> Участники команды</h5>
+                    <span class="badge bg-primary">{{ team_members.count }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Пользователь</th>
+                                    <th>Роль</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tm in team_members %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-person-circle fs-4 me-2"></i>
+                                            <div>
+                                                <div class="fw-bold">{{ tm.user.username }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ tm.get_role_color }}">
+                                            {{ tm.get_role_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        {% if member.role == 'ADMIN' and tm.user != request.user %}
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                                    type="button" data-bs-toggle="dropdown">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                       data-bs-target="#changeRoleModal{{ tm.id }}">
+                                                        <i class="bi bi-arrow-repeat me-1"></i> Изменить роль
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <form method="post" action="{% url 'remove_team_member' tm.id %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="dropdown-item text-danger"
+                                                                onclick="return confirm('Удалить участника из команды?')">
+                                                            <i class="bi bi-person-x me-1"></i> Удалить
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
 
-        {% if member.role in 'ADMIN,MANAGER' %}
-        <div class="mt-3">
-            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createProjectModal">
-                Создать проект
-            </a>
+                                <!-- Модальное окно изменения роли -->
+                                <div class="modal fade" id="changeRoleModal{{ tm.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Изменить роль для {{ tm.user.username }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form method="post" action="{% url 'change_member_role' tm.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <select name="new_role" class="form-select">
+                                                        {% for role_value, role_name in tm.ROLE_CHOICES %}
+                                                        <option value="{{ role_value }}" {% if tm.role == role_value %}selected{% endif %}>
+                                                            {{ role_name }}
+                                                        </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if member.role in 'ADMIN,MODERATOR' %}
+                    <button class="btn btn-outline-primary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                        <i class="bi bi-person-plus"></i> Добавить участника
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-        {% endif %}
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-kanban"></i> Проекты команды</h5>
+                    <span class="badge bg-primary">{{ projects.count }}</span>
+                </div>
+                <div class="card-body">
+                    {% if projects %}
+                    <div class="list-group list-group-flush">
+                        {% for project in projects %}
+                        <a href="{% url 'project_detail' team_id=team.id project_id=project.id %}"
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ project.name }}</h6>
+                                <small class="text-muted">
+<!--                                    {{ project.tasks.count }} задач |-->
+                                    Создан: {{ project.created_at|date:"d.m.Y" }}
+                                </small>
+                            </div>
+                            <span class="badge bg-{{ project.get_status_color }} rounded-pill">
+                                {{ project.get_status_display }}
+                            </span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i> В этой команде пока нет проектов.
+                    </div>
+                    {% endif %}
+
+                    {% if member.role in 'ADMIN,MODERATOR' %}
+<!--                    <form method="post" action="{% url 'create_project' team_id=team.id %}">-->
+                {% csrf_token %}
+                    <a class="btn btn-primary w-100 mt-3" href= "{% url 'create_project' team_id=team.id %}" >
+                        <i class="bi bi-plus-circle"></i> Создать проект
+                    </a>
+<!--                    </form>-->
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно добавления участника -->
+<div class="modal fade" id="addMemberModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить участника</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'add_team_member' team.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Пользователь</label>
+                        <select name="user_id" class="form-select" required>
+                            <option value="">-- Выберите пользователя --</option>
+                            {% for user in available_users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Роль</label>
+                        <select name="role" class="form-select" required>
+                            {% for role_value, role_name in ROLES %}
+                            <option value="{{ role_value }}">{{ role_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Добавить</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
 <!-- Модальное окно создания проекта -->
-<div class="modal fade" id="createProjectModal" tabindex="-1" aria-labelledby="createProjectModalLabel" aria-hidden="true">
+<div class="modal fade" id="createProjectModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="createProjectModalLabel">Новый проект</h5>
+                <h5 class="modal-title">Создать новый проект</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="{% url 'create_project' team_id=team.id %}">
+            <form method="post" action="{ url 'create_project' %}">
                 {% csrf_token %}
                 <input type="hidden" name="team_id" value="{{ team.id }}">
                 <div class="modal-body">
-                    {{ project_form.as_p }}
+                    {{ project_form|crispy }}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
@@ -79,4 +227,53 @@
         </div>
     </div>
 </div>
+
+<!-- Модальное окно управления командой -->
+<div class="modal fade" id="manageTeamModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Управление командой</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'update_team' team.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Название команды</label>
+                        <input type="text" name="name" class="form-control" value="{{ team.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание</label>
+                        <textarea name="description" class="form-control" rows="3">{{ team.description }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 12px;
+    }
+    .table th {
+        font-weight: 500;
+        color: #6c757d;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+    }
+    .badge {
+        font-weight: 500;
+        padding: 0.35em 0.65em;
+    }
+    .bg-admin { background-color: #6610f2; }
+    .bg-moderator { background-color: #0d6efd; }
+    .bg-developer { background-color: #198754; }
+    .bg-viewer { background-color: #6c757d; }
+</style>
 {% endblock %}

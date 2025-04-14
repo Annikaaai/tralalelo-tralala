@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block extra_css %}
+<style>
+    .registration-auth-page {
+        --reg-primary-blue: #4A6BFF;
+        --reg-primary-hover: #3A5BEF;
+        --reg-input-border: #e0e0e0;
+        --reg-input-focus: rgba(74, 107, 255, 0.2);
+    }
+
+    .registration-auth-page .auth-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .registration-auth-page .auth-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(74, 107, 255, 0.12);
+        overflow: hidden;
+    }
+
+    .registration-auth-page .auth-header {
+        background: linear-gradient(135deg, #4A6BFF 0%, #6A5BFF 100%);
+        color: white;
+        padding: 1.8rem;
+        text-align: center;
+    }
+
+    .registration-auth-page .auth-body {
+        padding: 2rem;
+        background-color: #fff;
+    }
+
+    .registration-auth-page .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .registration-auth-page .input-field {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid var(--reg-input-border);
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        background-color: #f9fafb;
+    }
+
+    .registration-auth-page .input-field:focus {
+        outline: none;
+        border-color: var(--reg-primary-blue);
+        box-shadow: 0 0 0 4px var(--reg-input-focus);
+        background-color: #fff;
+    }
+
+    .registration-auth-page .input-icon {
+        position: absolute;
+        right: 18px;
+        top: 42px;
+        color: #aaa;
+        font-size: 1.1rem;
+    }
+
+    .registration-auth-page .btn {
+        border-radius: 10px;
+        padding: 12px 24px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        font-size: 0.95rem;
+        width: 100%;
+    }
+
+    .registration-auth-page .btn-primary {
+        background: var(--reg-primary-blue);
+        color: white;
+        box-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
+    }
+
+    .registration-auth-page .btn-primary:hover {
+        background: var(--reg-primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    }
+
+    .registration-auth-page .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+        font-size: 0.9rem;
+    }
+
+    .registration-auth-page .auth-link {
+        color: var(--reg-primary-blue);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .registration-auth-page .auth-link:hover {
+        text-decoration: underline;
+    }
+
+    .registration-auth-page .error-message {
+        color: #e74c3c;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .registration-auth-page .error-icon {
+        margin-right: 6px;
+    }
+
+    .registration-auth-page .floating-label {
+        position: absolute;
+        left: 18px;
+        top: -10px;
+        background: white;
+        padding: 0 8px;
+        font-size: 0.8rem;
+        color: var(--reg-primary-blue);
+        font-weight: 500;
+    }
+
+    .registration-auth-page .alert {
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="registration-auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h3><i class="bi bi-person-plus-fill"></i> Регистрация</h3>
+                <p class="mb-0 mt-2 opacity-75">Создайте новый аккаунт</p>
+            </div>
+
+            <div class="auth-body">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        <i class="bi bi-exclamation-circle-fill"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Логин -->
+                    <div class="form-group">
+                        <div class="floating-label">Логин</div>
+                        <input
+                            type="text"
+                            name="username"
+                            id="id_username"
+                            class="input-field"
+                            value="{{ form.username.value|default:'' }}"
+                            placeholder="Введите ваш логин"
+                            required
+                            autofocus
+                        >
+                        <i class="bi bi-person input-icon"></i>
+                        {% if form.username.errors %}
+                            <div class="error-message">
+                                <i class="bi bi-x-circle-fill error-icon"></i>
+                                {{ form.username.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Пароль -->
+                    <div class="form-group">
+                        <div class="floating-label">Пароль</div>
+                        <input
+                            type="password"
+                            name="password"
+                            id="id_password"
+                            class="input-field"
+                            placeholder="Введите ваш пароль"
+                            required
+                        >
+                        <i class="bi bi-lock input-icon"></i>
+                        {% if form.password.errors %}
+                            <div class="error-message">
+                                <i class="bi bi-x-circle-fill error-icon"></i>
+                                {{ form.password.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mt-2">
+                        <i class="bi bi-person-plus"></i> Зарегистрироваться
+                    </button>
+
+                    <div class="auth-footer">
+                        Уже есть аккаунт? <a href="{% url 'login' %}" class="auth-link">Войти</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const pageContainer = document.querySelector('.registration-auth-page');
+
+        {% if form.errors %}
+            ['username', 'password'].forEach(field => {
+                if (pageContainer.querySelector(`#id_${field}`) &&
+                    pageContainer.querySelector(`#id_${field}`).nextElementSibling) {
+                    pageContainer.querySelector(`#id_${field}`).style.borderColor = '#e74c3c';
+                    pageContainer.querySelector(`#id_${field}`).nextElementSibling.style.color = '#e74c3c';
+                }
+            });
+        {% endif %}
+
+        const inputs = pageContainer.querySelectorAll('.input-field');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.querySelector('.floating-label').style.color = 'var(--reg-primary-blue)';
+            });
+            input.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.parentElement.querySelector('.floating-label').style.color = '#777';
+                }
+            });
+
+            if (input.value) {
+                input.parentElement.querySelector('.floating-label').style.color = 'var(--reg-primary-blue)';
+            }
+        });
+    });
+</script>
+{% endblock %}

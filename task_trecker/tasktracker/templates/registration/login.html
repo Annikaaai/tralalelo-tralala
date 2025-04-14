@@ -1,16 +1,265 @@
 {% extends 'base.html' %}
 
-{% block title %}Вход{% endblock %}
+{% block title %}Вход в систему{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-auth-page {
+        --login-primary-blue: #4A6BFF;
+        --login-primary-hover: #3A5BEF;
+        --login-input-border: #e0e0e0;
+        --login-input-focus: rgba(74, 107, 255, 0.2);
+    }
+
+    .login-auth-page .auth-container {
+        max-width: 600px;  /* Изменено с 500px на 600px */
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .login-auth-page .auth-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(74, 107, 255, 0.12);
+        overflow: hidden;
+    }
+
+    .login-auth-page .auth-header {
+        background: linear-gradient(135deg, #4A6BFF 0%, #6A5BFF 100%);
+        color: white;
+        padding: 1.8rem;
+        text-align: center;
+    }
+
+    .login-auth-page .auth-body {
+        padding: 2rem;
+        background-color: #fff;
+    }
+
+    .login-auth-page .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .login-auth-page .form-label {
+        display: block;
+        margin-bottom: 0.6rem;
+        font-weight: 500;
+        color: #555;
+        font-size: 0.95rem;
+    }
+
+    .login-auth-page .input-field {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid var(--login-input-border);
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        background-color: #f9fafb;
+    }
+
+    .login-auth-page .input-field:focus {
+        outline: none;
+        border-color: var(--login-primary-blue);
+        box-shadow: 0 0 0 4px var(--login-input-focus);
+        background-color: #fff;
+    }
+
+    .login-auth-page .input-icon {
+        position: absolute;
+        right: 18px;
+        top: 42px;
+        color: #aaa;
+        font-size: 1.1rem;
+    }
+
+    .login-auth-page .btn {
+        border-radius: 10px;
+        padding: 12px 24px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        font-size: 0.95rem;
+        width: 100%;
+    }
+
+    .login-auth-page .btn-primary {
+        background: var(--login-primary-blue);
+        color: white;
+        box-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
+    }
+
+    .login-auth-page .btn-primary:hover {
+        background: var(--login-primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(74, 107, 255, 0.4);
+    }
+
+    .login-auth-page .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+        font-size: 0.9rem;
+    }
+
+    .login-auth-page .auth-link {
+        color: var(--login-primary-blue);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .login-auth-page .auth-link:hover {
+        text-decoration: underline;
+    }
+
+    .login-auth-page .error-message {
+        color: #e74c3c;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .login-auth-page .error-icon {
+        margin-right: 6px;
+    }
+
+    .login-auth-page .floating-label {
+        position: absolute;
+        left: 18px;
+        top: -10px;
+        background: white;
+        padding: 0 8px;
+        font-size: 0.8rem;
+        color: var(--login-primary-blue);
+        font-weight: 500;
+    }
+
+    .login-auth-page .alert {
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <h2 class="text-center">Вход в систему</h2>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary w-100">Войти</button>
-        </form>
+<div class="login-auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h3><i class="bi bi-person-fill"></i> Вход в систему</h3>
+                <p class="mb-0 mt-2 opacity-75">Введите свои учетные данные</p>
+            </div>
+
+            <div class="auth-body">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        <i class="bi bi-exclamation-circle-fill"></i> {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <div class="floating-label">Логин</div>
+                        <input
+                            type="text"
+                            name="{{ form.username.name }}"
+                            id="{{ form.username.id_for_label }}"
+                            class="input-field"
+                            value="{{ form.username.value|default:'' }}"
+                            placeholder="Введите ваш логин"
+                            required
+                            autofocus
+                        >
+                        <i class="bi bi-person input-icon"></i>
+                        {% if form.username.errors %}
+                            <div class="error-message">
+                                <i class="bi bi-x-circle-fill error-icon"></i>
+                                {{ form.username.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <div class="floating-label">Пароль</div>
+                        <input
+                            type="password"
+                            name="{{ form.password.name }}"
+                            id="{{ form.password.id_for_label }}"
+                            class="input-field"
+                            placeholder="Введите ваш пароль"
+                            required
+                        >
+                        <i class="bi bi-lock input-icon"></i>
+                        {% if form.password.errors %}
+                            <div class="error-message">
+                                <i class="bi bi-x-circle-fill error-icon"></i>
+                                {{ form.password.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mt-3">
+                        <i class="bi bi-box-arrow-in-right"></i> Войти
+                    </button>
+
+                    <div class="auth-footer">
+                        Нет аккаунта? <a href="{% url 'register' %}" class="auth-link">Зарегистрируйтесь</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const pageContainer = document.querySelector('.login-auth-page');
+
+        {% if form.errors %}
+            {% for field in form %}
+                {% if field.errors %}
+                    const {{ field.name }}Field = pageContainer.querySelector('#{{ field.id_for_label }}');
+                    {{ field.name }}Field.style.borderColor = '#e74c3c';
+                    {{ field.name }}Field.nextElementSibling.style.color = '#e74c3c';
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        const inputs = pageContainer.querySelectorAll('.input-field');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.querySelector('.floating-label').style.color = 'var(--login-primary-blue)';
+            });
+            input.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.parentElement.querySelector('.floating-label').style.color = '#777';
+                }
+            });
+
+            // Инициализация плавающих меток для заполненных полей при загрузке
+            if (input.value) {
+                input.parentElement.querySelector('.floating-label').style.color = 'var(--login-primary-blue)';
+            }
+        });
+    });
+</script>
 {% endblock %}

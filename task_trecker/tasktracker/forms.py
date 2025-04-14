@@ -42,3 +42,23 @@ class CommentForm(forms.ModelForm):
         widgets = {
             'text': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Добавьте комментарий...'}),
         }
+
+
+
+class RegisterUserForm(forms.Form):
+    username = forms.CharField(
+        max_length=32,
+        label="Username",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Имя пользователя"})
+    )
+    password = forms.CharField(
+        max_length=32,
+        label="Password",
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Пароль"})
+    )
+
+
+
+class AddTeamMemberForm(forms.Form):
+    user_id = forms.IntegerField()
+    role = forms.ChoiceField(choices=TeamMember.ROLE_CHOICES)

@@ -11,12 +11,12 @@
                 <i class="bi bi-card-checklist text-primary"></i> {{ task.title }}
             </h2>
             <p class="text-muted mb-0">
-                Проект: <a href="{% url 'project_detail' project_id=task.project.id %}">{{ task.project.name }}</a>
+                Проект: <a href="{% url 'project_detail' team_id=task.project.team.id project_id=task.project.id %}">{{ task.project.name }}</a>
                 <span class="mx-2">|</span>
                 Создал: {{ task.created_by.user.username }}
             </p>
         </div>
-        <a href="{% url 'project_detail' project_id=task.project.id %}" class="btn btn-outline-secondary">
+        <a href="{% url 'project_detail' team_id=task.project.team.id project_id=task.project.id %}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Назад к проекту
         </a>
     </div>
@@ -46,40 +46,57 @@
                     <div class="card bg-light p-3 mb-4">
                         {{ task.description|default:"Описание не добавлено"|linebreaks }}
                     </div>
-
-                    {% if task.deadline %}
-                    <div class="alert alert-info d-flex align-items-center">
-                        <i class="bi bi-clock-history fs-4 me-3"></i>
-                        <div>
-                            <strong>Дедлайн:</strong> 
-                            {{ task.deadline|date:"d.m.Y H:i" }}
-                            {% if task.is_overdue %}
-                                <span class="badge bg-danger ms-2">Просрочено</span>
-                            {% endif %}
-                        </div>
-                    </div>
+            {% if task.deadline %}
+            <div class="alert alert-info d-flex align-items-center">
+                <i class="bi bi-clock-history fs-4 me-3"></i>
+                <div>
+                    <strong>Дедлайн:</strong>
+                    {{ task.deadline|date:"d.m.Y H:i" }}
+                    {% if task.is_overdue %}
+                        <span class="badge bg-danger ms-2">Просрочено</span>
                     {% endif %}
+                    {% if member.role in 'ADMIN,MODERATOR' %}
+                        <div class="mt-1">
+                            <a href="#" class="small" data-bs-toggle="modal" data-bs-target="#deadlineModal">
+                                <i class="bi bi-pencil"></i> Изменить
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+                {% if member.role in 'ADMIN,MODERATOR' %}
+                <div class="alert alert-light d-flex align-items-center">
+                    <i class="bi bi-clock fs-4 me-3"></i>
+                    <div>
+                        <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#deadlineModal">
+                            <i class="bi bi-plus"></i> Установить дедлайн
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            {% endif %}
 
                     <div class="d-flex gap-2 mb-4">
-                        <form method="post" action="{% url 'update_task_status' task_id=task.id new_status='TODO' %}">
+                        <form method="post" action="{% url 'update_task_status' team_id=task.project.team.id project_id=task.project.id task_id=task.id new_status='TODO' %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-outline-secondary" {% if task.status == 'TODO' %}disabled{% endif %}>
                                 <i class="bi bi-x-circle"></i> В работу
                             </button>
                         </form>
-                        <form method="post" action="{% url 'update_task_status' task_id=task.id new_status='IN_PROGRESS' %}">
+                        <form method="post" action="{% url 'update_task_status' team_id=task.project.team.id project_id=task.project.id task_id=task.id new_status='IN_PROGRESS' %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-outline-primary" {% if task.status == 'IN_PROGRESS' %}disabled{% endif %}>
                                 <i class="bi bi-arrow-repeat"></i> В процессе
                             </button>
                         </form>
-                        <form method="post" action="{% url 'update_task_status' task_id=task.id new_status='REVIEW' %}">
+                        <form method="post" action="{% url 'update_task_status' team_id=task.project.team.id project_id=task.project.id task_id=task.id new_status='REVIEW' %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-outline-warning" {% if task.status == 'REVIEW' %}disabled{% endif %}>
                                 <i class="bi bi-eye"></i> На проверку
                             </button>
                         </form>
-                        <form method="post" action="{% url 'update_task_status' task_id=task.id new_status='DONE' %}">
+                        <form method="post" action="{% url 'update_task_status' team_id=task.project.team.id project_id=task.project.id task_id=task.id new_status='DONE' %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-outline-success" {% if task.status == 'DONE' %}disabled{% endif %}>
                                 <i class="bi bi-check-circle"></i> Завершить
@@ -89,18 +106,80 @@
                 </div>
             </div>
 
+            <div class="card-body">
+                {% if member.role in 'ADMIN,MANAGER' or task.created_by == member %}
+                <button type="button" class="btn btn-outline-secondary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#editTaskModal">
+                    <i class="bi bi-pencil"></i> Редактировать
+                </button>
+
+                <form method="post" action="{% url 'delete_task' team_id=task.project.team.id project_id=task.project.id task_id=task.id %}" class="mb-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Вы уверены?')">
+                        <i class="bi bi-trash"></i> Удалить
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-light">
                     <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Комментарии ({{ task.comments.count }})</h5>
                 </div>
                 <div class="card-body">
-                    {% for comment in task.comments.all %}
-                    <div class="mb-3 pb-3 border-bottom">
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="add_comment" value="1">
+                        {{ comment_form|crispy }}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i> Отправить
+                        </button>
+                    </form>
+                    {% for comment in comments %}
+                    <div class="mb-3 pb-3 border-bottom comment-block" id="comment-{{ comment.id }}">
                         <div class="d-flex justify-content-between mb-2">
                             <strong>{{ comment.author.user.username }}</strong>
                             <small class="text-muted">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
                         </div>
-                        <p class="mb-0">{{ comment.text }}</p>
+
+                        <!-- Основной текст комментария -->
+                        <div class="comment-text">
+                            <p class="mb-0">{{ comment.text }}</p>
+                        </div>
+
+                        <!-- Форма редактирования (скрыта по умолчанию) -->
+                        <div id="edit-form-{{ comment.id }}" style="display: none;" class="mt-2">
+                            <form method="post" class="edit-comment-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="comment_id" value="{{ comment.id }}">
+                                <textarea name="text" class="form-control mb-2">{{ comment.text }}</textarea>
+                                <button type="submit" name="edit_comment" class="btn btn-sm btn-success me-2">
+                                    <i class="bi bi-check"></i> Сохранить
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary cancel-edit"
+                                        data-comment-id="{{ comment.id }}">
+                                    <i class="bi bi-x"></i> Отмена
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Кнопки действий (только для автора комментария) -->
+                        {% if comment.author == member %}
+                        <div class="comment-actions mt-2">
+                            <button class="btn btn-sm btn-outline-primary edit-comment"
+                                    data-comment-id="{{ comment.id }}">
+                                <i class="bi bi-pencil"></i> Редактировать
+                            </button>
+
+                            <form method="post" class="d-inline ms-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="comment_id" value="{{ comment.id }}">
+                                <button type="submit" name="delete_comment" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Удалить этот комментарий?')">
+                                    <i class="bi bi-trash"></i> Удалить
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
                     </div>
                     {% empty %}
                     <div class="alert alert-info mb-0">
@@ -108,13 +187,8 @@
                     </div>
                     {% endfor %}
 
-                    <form method="post" class="mt-4">
-                        {% csrf_token %}
-                        {{ comment_form|crispy }}
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-send"></i> Отправить
-                        </button>
-                    </form>
+
+
                 </div>
             </div>
         </div>
@@ -138,47 +212,85 @@
                             {% endif %}
                         </div>
                     </div>
-                    
-                    {% if member.role in 'ADMIN,MANAGER' or task.assigned_to == member %}
-                    <form method="post" action="">
-                        {% csrf_token %}
-                        <select name="assignee" class="form-select mb-2">
-                            <option value="">-- Выберите исполнителя --</option>
-                            {% for member in task.project.team.members.all %}
-                            <option value="{{ member.id }}" {% if task.assigned_to == member %}selected{% endif %}>
-                                {{ member.user.username }} ({{ member.get_role_display }})
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <button type="submit" class="btn btn-sm btn-outline-primary w-100">
-                            <i class="bi bi-person-check"></i> Назначить
-                        </button>
-                    </form>
-                    {% endif %}
-                </div>
-            </div>
 
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0"><i class="bi bi-activity"></i> Действия</h5>
-                </div>
-                <div class="card-body">
-                    {% if member.role in 'ADMIN,MANAGER' or task.created_by == member %}
-                    <a href="" class="btn btn-outline-secondary w-100 mb-2">
-                        <i class="bi bi-pencil"></i> Редактировать
-                    </a>
-                    <form method="post" action="" class="mb-0">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Вы уверены?')">
-                            <i class="bi bi-trash"></i> Удалить
-                        </button>
-                    </form>
-                    {% endif %}
+                    {% if member.role in 'ADMIN,MODERATOR' or task.assigned_to == member %}
+                        <form method="post" action="{% url 'reassign_task' team_id=task.project.team.id project_id=task.project.id task_id=task.id %}">
+                            {% csrf_token %}
+                            <select name="assignee" class="form-select mb-2">
+                                <option value="">-- Выберите исполнителя --</option>
+                                {% for tm in task.project.team.teammember_set.all %}
+                                    <option value="{{ tm.id }}" {% if task.assigned_to == tm %}selected{% endif %}>
+                                        {{ tm.user.username }} ({{ tm.get_role_display }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                                <i class="bi bi-person-check"></i> {% if task.assigned_to %}Переназначить{% else %}Назначить{% endif %}
+                            </button>
+                        </form>
+                        {% endif %}
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editTaskModalLabel">Редактирование задачи</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="edit_task" value="1">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Название</label>
+                            <input type="text" class="form-control" name="title" value="{{ task.title }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Описание</label>
+                            <textarea class="form-control" name="description" rows="5">{{ task.description }}</textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Статус</label>
+                                <select class="form-select" name="status">
+                                    {% for status in task.STATUS_CHOICES %}
+                                    <option value="{{ status.0 }}" {% if task.status == status.0 %}selected{% endif %}>
+                                        {{ status.1 }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Приоритет</label>
+                                <select class="form-select" name="priority">
+                                    {% for priority in task.PRIORITY_CHOICES %}
+                                    <option value="{{ priority.0 }}" {% if task.priority == priority.0 %}selected{% endif %}>
+                                        {{ priority.1 }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Дедлайн</label>
+                            <input type="datetime-local" class="form-control" name="deadline"
+                                   value="{{ task.deadline|date:'Y-m-d\TH:i' }}">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
+
 {% endblock %}
 
 {% block extra_css %}
@@ -205,12 +317,34 @@
 
 {% block extra_js %}
 <script>
-    // Подтверждение удаления
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            if (!confirm('Вы уверены, что хотите удалить эту задачу?')) {
-                e.preventDefault();
-            }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработчики для кнопок редактирования
+        document.querySelectorAll('.edit-comment').forEach(button => {
+            button.addEventListener('click', function() {
+                const commentId = this.dataset.commentId;
+                const commentBlock = document.getElementById(`comment-${commentId}`);
+                const commentText = commentBlock.querySelector('.comment-text');
+                const editForm = commentBlock.querySelector(`#edit-form-${commentId}`);
+
+                commentText.style.display = 'none';
+                editForm.style.display = 'block';
+                this.style.display = 'none';
+            });
+        });
+
+        // Обработчики для кнопок отмены редактирования
+        document.querySelectorAll('.cancel-edit').forEach(button => {
+            button.addEventListener('click', function() {
+                const commentId = this.dataset.commentId;
+                const commentBlock = document.getElementById(`comment-${commentId}`);
+                const commentText = commentBlock.querySelector('.comment-text');
+                const editForm = commentBlock.querySelector(`#edit-form-${commentId}`);
+                const editButton = commentBlock.querySelector('.edit-comment');
+
+                commentText.style.display = 'block';
+                editForm.style.display = 'none';
+                editButton.style.display = 'inline-block';
+            });
         });
     });
 </script>
