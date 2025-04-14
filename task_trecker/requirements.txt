@@ -2,3 +2,4 @@ djangorestframework
 crispy-bootstrap5
 Django
 django-crispy-forms
+gunicorn==21.2.0
