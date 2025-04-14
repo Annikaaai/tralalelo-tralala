@@ -19,7 +19,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
-ALLOWED_HOSTS = ["task_trecker.up.railway.app", "tralalelo-tralala-production.up.railway.app", "tralalelo-tralala-product.up.railway.app"]
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'tasktracker:dashboard'  # Куда перенаправлять после входа
 LOGOUT_REDIRECT_URL = 'login'
@@ -141,7 +140,14 @@ USE_I18N = True
 
 USE_TZ = True
 
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://tralalelo-tralala-product.up.railway.app",
+    "https://*.railway.app", 
+]
+ALLOWED_HOSTS = [
+    "tralalelo-tralala-product.up.railway.app",
+    ".railway.app", 
+]
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
