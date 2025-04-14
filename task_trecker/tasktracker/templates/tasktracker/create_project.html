@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Создать проект в {{ team.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="bi bi-folder-plus me-2"></i>Новый проект в {{ team.name }}
+                        </h4>
+                        <a href="{% url 'team_detail' team_id=team.id %}" class="btn btn-sm btn-light">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <h5 class="text-muted mb-3">Основная информация</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                                        <i class="bi bi-card-heading me-1"></i>Название проекта*
+                                    </label>
+                                    {{ form.name|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="{{ form.status.id_for_label }}" class="form-label">
+                                        <i class="bi bi-kanban me-1"></i>Статус
+                                    </label>
+                                    {{ form.status|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="text-muted mb-3">Детали проекта</h5>
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">
+                                    <i class="bi bi-text-paragraph me-1"></i>Описание
+                                </label>
+                                {{ form.description|as_crispy_field }}
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="{{ form.deadline.id_for_label }}" class="form-label">
+                                        <i class="bi bi-calendar-date me-1"></i>Дедлайн
+                                    </label>
+                                    {{ form.deadline|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'team_detail' team_id=team.id %}" class="btn btn-outline-secondary me-md-2">
+                                <i class="bi bi-arrow-left me-1"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-1"></i>Создать проект
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .card-header {
+        border-radius: 0 !important;
+    }
+    .form-control, .form-select {
+        border-radius: 8px;
+        padding: 10px 15px;
+    }
+    textarea.form-control {
+        min-height: 120px;
+    }
+    .btn {
+        border-radius: 8px;
+        padding: 8px 20px;
+        font-weight: 500;
+    }
+    .btn-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    .is-invalid {
+        border-color: #dc3545;
+    }
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Валидация формы
+    document.addEventListener('DOMContentLoaded', function() {
+        // Подсветка обязательных полей
+        const requiredFields = document.querySelectorAll('[required]');
+        requiredFields.forEach(field => {
+            field.labels[0].innerHTML += ' <span class="text-danger">*</span>';
+        });
+
+        // Показ ошибок при отправке
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    });
+</script>
+{% endblock %}

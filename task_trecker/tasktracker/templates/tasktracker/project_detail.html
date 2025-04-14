@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ project.name }} - Детали проекта{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="bi bi-kanban-fill text-primary"></i> {{ project.name }}
+            </h2>
+            <p class="text-muted mb-0">
+                <i class="bi bi-people-fill"></i> Команда: {{ project.team.name }}
+                <span class="mx-2">|</span>
+                Статус: <span class="badge bg-{{ project.get_status_color }}">{{ project.get_status_display }}</span>
+            </p>
+        </div>
+        <a href="{% url 'team_detail' team_id=project.team.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад к команде
+        </a>
+    </div>
+
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-card-text"></i> Описание проекта</h5>
+            <p class="card-text">{{ project.description|default:"Описание не добавлено" }}</p>
+            {% if project.deadline %}
+            <p class="card-text text-muted">
+                <i class="bi bi-calendar-check"></i> Дедлайн: {{ project.deadline|date:"d.m.Y H:i" }}
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-list-task"></i> Задачи проекта</h5>
+                </div>
+                <div class="card-body">
+                    {% if tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Название</th>
+                                    <th>Статус</th>
+                                    <th>Приоритет</th>
+                                    <th>Исполнитель</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in tasks %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'task_detail' task_id=task.id %}">
+                                            {{ task.title|truncatechars:30 }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ task.get_status_color }}">
+                                            {{ task.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ task.get_priority_color }}">
+                                            {{ task.get_priority_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if task.assigned_to %}
+                                            {{ task.assigned_to.user.username }}
+                                        {% else %}
+                                            <span class="text-muted">Не назначена</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'task_detail' task_id=task.id %}" 
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Просмотреть">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i> В этом проекте пока нет задач.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Создать новую задачу</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <button type="submit" class="btn btn-primary w-100 mt-3">
+                            <i class="bi bi-plus-lg"></i> Создать задачу
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 10px;
+    }
+    .table {
+        font-size: 0.9rem;
+    }
+    .table th {
+        font-weight: 500;
+        color: #6c757d;
+    }
+    .badge {
+        font-weight: 500;
+        padding: 0.35em 0.65em;
+    }
+    .bg-todo { background-color: #6c757d; }
+    .bg-in_progress { background-color: #0dcaf0; }
+    .bg-review { background-color: #ffc107; color: #000; }
+    .bg-done { background-color: #198754; }
+    .bg-low { background-color: #6c757d; }
+    .bg-medium { background-color: #0dcaf0; }
+    .bg-high { background-color: #dc3545; }
+</style>
+{% endblock %}
